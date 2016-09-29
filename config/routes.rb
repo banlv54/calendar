@@ -1,4 +1,6 @@
 Rails.application.routes.draw do
+  get 'google_map/index'
+
   root 'to_dos#index'
 
   resources :to_dos, only: [:index, :show]

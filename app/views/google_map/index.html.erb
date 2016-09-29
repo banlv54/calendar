@@ -1,0 +1,115 @@
+<% content_for :title, "Complex Polylines" %>
+<style>
+  html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+  }
+  #map {
+    height: 500px;
+  }
+  .button-control {
+    margin-bottom: 10px;
+    text-align: center;
+  }
+  p {
+    margin-left: 50px;
+  }
+</style>
+<div>
+  <div id="map"></div>
+  <div class="button-control">
+    <%= button_tag "Export polyline", id: 'export_polyline' %><br/><br/>
+    <%= button_tag "Clear path", id: 'clear_path' %><br/><br/>
+    <%= button_tag "Clear marker", id: 'clear_marker' %><br/><br/>
+    <b>Current Point:</b> <i id="point"> </i>
+  </div>
+  <p>
+    <%= text_field_tag :lat, nil, type: "number", placeholder: "Latitude", id: 'lat' %>
+    <%= text_field_tag :lng, nil, type: "number", placeholder: "Longitude", id: 'lng' %>
+    <%= button_tag "Constain?", id: 'constain' %>
+    &nbsp;&nbsp;&nbsp;<b id='res'></b><br/><br/>
+  </p>
+  <p id='polyline'>
+  </p>
+</div>
+<script>
+  var polyline;
+  var map;
+  var markers = [];
+  var flightPlanCoordinates;
+
+  $('#export_polyline').click(function(){
+    var path = polyline.getPath();
+    for (i = 0; i < path.length; i++) {
+      $("#polyline").append(path.b[i].lat() + "---" + path.b[i].lat() + "<br/>");
+    }
+  });
+
+  $("#clear_path").click(function(){
+    polyline.setPath([]);
+  });
+
+  $("#clear_marker").click(function(){
+    for (var i = 0; i < markers.length; i++) {
+      markers[i].setMap(null);
+    }
+  });
+
+  $("#constain").click(function(){
+    var polygon = new google.maps.Polygon({paths: flightPlanCoordinates});
+    lat = $("#lat").val()
+    lng = $("#lng").val()
+    $("#res").text(google.maps.geometry.poly.containsLocation(new google.maps.LatLng(lat, lng), polygon) ? "YES" : "NO")
+  });
+
+  function initMap() {
+    map = new google.maps.Map(document.getElementById('map'), {
+      zoom: 15,
+      center: {lat: 21.017494396243393, lng: 105.78447818756104}  // Center the map on Kengnam
+    });
+
+    polyline = new google.maps.Polyline({
+      strokeColor: '#000000',
+      strokeOpacity: 1.0,
+      strokeWeight: 3
+    });
+    polyline.setMap(map);
+
+    flightPlanCoordinates = [
+            {lat: 21.01757451667712, lng: 105.78233242034912},
+            {lat: 21.014249482504315, lng: 105.78520774841309},
+            {lat: 21.016372705651595, lng: 105.78838348388672},
+            {lat: 21.019978109671193, lng: 105.78580856323242},
+            {lat: 21.01757451667712, lng: 105.78233242034912}
+          ];
+    var flightPath = new google.maps.Polyline({
+            path: flightPlanCoordinates,
+            geodesic: true,
+            strokeColor: '#FF0000',
+            strokeOpacity: 1.0,
+            strokeWeight: 2
+          });
+    flightPath.setMap(map);
+    map.addListener('click', addLatLng);
+  }
+
+  function addLatLng(event) {
+    $("#point").text(event.latLng)
+    var path = polyline.getPath();
+
+    path.push(event.latLng);
+
+    var marker = new google.maps.Marker({
+      position: event.latLng,
+      title: '#' + path.getLength(),
+      map: map
+    });
+
+    markers.push(marker);
+  }
+
+</script>
+<script async defer
+src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB_bLfJ6fFRXrb-po1rGcv5OIrF-uaTf1o&callback=initMap">
+</script>
